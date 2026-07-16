@@ -22,7 +22,7 @@
 
 ## Live Demo
 
-https://aura-weather-beta.vercel.app
+https://aura-weather-sable.vercel.app/
 
 ---
 
