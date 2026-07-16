@@ -1,6 +1,6 @@
 import { Search, MapPin } from "lucide-react";
 
-export default function Header({ location, setLocation, getLocation, fetchWeather, isCelsius, setIsCelsius }) {
+export default function Header({ location, setLocation, fetchWeatherByLocation, fetchWeatherByCity, isCelsius, setIsCelsius, history }) {
 
     return (
         <nav className="p-4">
@@ -19,7 +19,7 @@ export default function Header({ location, setLocation, getLocation, fetchWeathe
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
-                            location && fetchWeather(location);
+                            location && fetchWeatherByCity(location);
                         }}
                         className="flex w-full items-center rounded-full border border-white/20
                                         bg-white/10 px-3 py-0.5 focus-within:shadow-xl  
@@ -45,7 +45,7 @@ export default function Header({ location, setLocation, getLocation, fetchWeathe
                         />
 
                         <button 
-                            onClick={getLocation}
+                            onClick={fetchWeatherByLocation}
                             className="bg-white/10 rounded-full px-3 py-2 cursor-pointer hover:bg-white/20 transition-all duration-200 active:scale-95"
                         >
                             <MapPin className="text-white/70 w-4 h-4"/>
@@ -102,8 +102,39 @@ export default function Header({ location, setLocation, getLocation, fetchWeathe
                         </button>
                     </div>
                 </div>
-                
             </div>
+
+            {/* Mobile */}
+            <section className="flex md:hidden gap-2 mt-2 overflow-x-auto">
+            {[...history].reverse().map((city) => (
+                <span
+                key={`${city.name}-${city.region}-${city.country}`}
+                onClick={() => fetchWeatherByCity(city.name)}
+                className="bg-white/20 border border-white/30 text-sm
+                            text-white rounded-2xl px-4 py-1 font-semibold
+                            font-manrope hover:bg-white/30 transition duration-200
+                            cursor-pointer shrink-0 active:scale-95"
+                >
+                {city.name}
+                </span>
+            ))}
+            </section>
+
+            {/* Desktop */}
+            <section className="hidden md:flex gap-2 md:ml-4 mt-2 overflow-x-auto">
+            {history.map((city) => (
+                <span
+                key={`${city.name}-${city.region}-${city.country}`}
+                onClick={() => fetchWeatherByCity(city.name)}
+                className="bg-white/20 border border-white/30 text-sm
+                            text-white rounded-2xl px-4 py-1 font-semibold
+                            font-manrope hover:bg-white/30 transition duration-200
+                            cursor-pointer shrink-0 active:scale-95"
+                >
+                {city.name}
+                </span>
+            ))}
+            </section>
         </nav>
     );
 }

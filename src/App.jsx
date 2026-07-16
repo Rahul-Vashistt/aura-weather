@@ -20,12 +20,13 @@ export default function App() {
   const {
     weather,
     location,
+    history,
     setLocation,
     isLoading,
     error,
     hasSearched,
-    getLocation,
-    fetchWeather
+    fetchWeatherByLocation,
+    fetchWeatherByCity
   } = useWeather();
 
   const [ isCelsius, setIsCelsius ] = useState(true);
@@ -129,10 +130,11 @@ export default function App() {
             <Header
               location={location}
               setLocation={setLocation}
-              getLocation={getLocation}
-              fetchWeather={fetchWeather}
+              fetchWeatherByLocation={fetchWeatherByLocation}
+              fetchWeatherByCity={fetchWeatherByCity}
               isCelsius={isCelsius}
               setIsCelsius={setIsCelsius}
+              history={history}
             />
 
             {hasSearched && (

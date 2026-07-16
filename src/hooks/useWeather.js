@@ -21,6 +21,15 @@ export default function useWeather() {
         }
     });
 
+    const [ history, setHistory ] = useState(() => {
+        try{
+            const stored = localStorage.getItem("history");
+            return stored ? JSON.parse(stored) : [];
+        } catch{
+            return [];
+        }
+    })
+
     const [ isLoading, setIsLoading ] = useState(false);
     const [ error, setError ] = useState("")
     const [ hasSearched, setHasSearched ] = useState(() => !!weather);
@@ -41,10 +50,29 @@ export default function useWeather() {
             throw new Error(data.error.message);
         }
 
+        setHistory(recentSearches => {
+            const historyItem = {
+                name: data.location.name,
+                region: data.location.region,
+                country: data.location.country,
+            };
+
+            return [
+                ...recentSearches.filter(
+                    place => 
+                        !(
+                            place.name === historyItem.name &&
+                            place.region === historyItem.region &&
+                            place.country === historyItem.country
+                        )
+                ), historyItem
+            ].slice(-5);
+        });
+
         return data;
     }
 
-    const getLocation = () => {
+    const fetchWeatherByLocation = () => {
         if (!navigator.geolocation) {
         setError("Geolocation is not supported by your browser.");
         return;
@@ -94,7 +122,7 @@ export default function useWeather() {
         );
     };
 
-    const fetchWeather = async(city) => {
+    const fetchWeatherByCity = async(city) => {
         setIsLoading(true);
         setError("");
         setHasSearched(true);
@@ -121,14 +149,19 @@ export default function useWeather() {
         localStorage.setItem("weather", JSON.stringify(weather));
     }, [weather]);
 
+    useEffect(() => {
+        localStorage.setItem("history", JSON.stringify(history));
+    }, [history]);
+
     return {
         weather,
         location,
+        history,
         setLocation,
         isLoading,
         error,
         hasSearched,
-        getLocation,
-        fetchWeather
+        fetchWeatherByLocation,
+        fetchWeatherByCity
     };
 }
