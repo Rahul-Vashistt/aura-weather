@@ -6,6 +6,10 @@ export default function getWindDescription(windSpeed) {
         windy: "Strong winds are expected.",
     };
 
+    if (windSpeed == null) {
+        return "Wind data unavailable.";
+    }
+
     let windKey;
 
     if (windSpeed < 5) {

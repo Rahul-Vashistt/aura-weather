@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import useWeather from "./hooks/useWeather";
 import Header from "./components/Header";
 import WeatherDisplay from "./components/WeatherDisplay";
 import WeatherDetails from "./components/WeatherDetails";
 import WeatherForecast from "./components/WeatherForecast";
-import { API_KEY, BASE_URL, ENDPOINTS } from "./utils/api";
 import feelsLike from "./assets/feelsLike.svg";
 import humidity from "./assets/humidity.svg";
 import wind from "./assets/wind.svg";
@@ -17,29 +17,18 @@ import getAQI from "./utils/getAQI";
 
 
 export default function App() {
-  const [ weather, setWeather ] = useState(() => {
-    try{
-      const stored = localStorage.getItem("weather");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const {
+    weather,
+    location,
+    setLocation,
+    isLoading,
+    error,
+    hasSearched,
+    getLocation,
+    fetchWeather
+  } = useWeather();
 
-  const [ isLoading, setIsLoading ] = useState(false);
-  const [ error, setError ] = useState(null)
-  const [ location, setLocation ] = useState(() => {
-    try{
-      const stored = localStorage.getItem("location");
-      return stored ? JSON.parse(stored) : "";
-    } catch {
-      return "";
-    }
-  });
-
-  const [ selectedLocation, setSelectedLocation ] = useState(() => !!weather);
   const [ isCelsius, setIsCelsius ] = useState(true);
-
 
   const currentAppearance = getWeatherAppearance(weather?.current?.condition?.text);
   const bgClass = currentAppearance.background;
@@ -127,90 +116,6 @@ export default function App() {
   });
   
 
-  const getLocation = () => {
-    if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-    setSelectedLocation(true);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-
-          const url = `${BASE_URL}${ENDPOINTS.forecast}?key=${API_KEY}&q=${latitude},${longitude}&days=6&aqi=yes`;
-          const res = await fetch(url);
-          const data = await res.json();
-
-          setWeather(data);
-        } catch (err) {
-          setError(`Error fetching weather: ${err.message}`);
-        } finally {
-          setIsLoading(false);
-        }
-      },
-      (error) => {
-        setIsLoading(false);
-
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setError("Location permission denied.");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            setError("Location unavailable.");
-            break;
-          case error.TIMEOUT:
-            setError("Location request timed out.");
-            break;
-          default:
-            setError("Unable to retrieve location.");
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-  };
-
-  const fetchWeather = async(city) => {
-    setIsLoading(true);
-    setError("");
-    setSelectedLocation(true);
-
-    try{
-      const url = `${BASE_URL}${ENDPOINTS.forecast}?key=${API_KEY}&q=${city}&days=6&aqi=yes`;
-
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (data.error) {
-        throw new Error(data.error.message);
-      }
-
-      setWeather(data);
-
-    } catch (err) {
-      setError(`Error fetching weather: ${err.message}`)
-
-    } finally {
-      setIsLoading(false);
-      setLocation("");
-    }
-  }
-
-  useEffect(() => {
-    localStorage.setItem("location", JSON.stringify(location));
-  }, [location]);
-
-  useEffect(() => {
-    localStorage.setItem("weather", JSON.stringify(weather));
-  }, [weather]);
 
   return (
     <>
@@ -222,7 +127,6 @@ export default function App() {
 
         <main className="absolute inset-0 overflow-y-auto">
             <Header
-              searchedCity={selectedLocation}
               location={location}
               setLocation={setLocation}
               getLocation={getLocation}
@@ -231,7 +135,7 @@ export default function App() {
               setIsCelsius={setIsCelsius}
             />
 
-            {selectedLocation && (
+            {hasSearched && (
               <>
                 <WeatherDisplay
                   isLoading={isLoading}

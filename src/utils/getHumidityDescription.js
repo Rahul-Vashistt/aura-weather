@@ -6,6 +6,10 @@ export default function getHumidityDescription(humidityPercent) {
         veryHumid: "High humidity may feel sticky and uncomfortable.",
     };
 
+    if (humidityPercent == null) {
+        return "Humidity data unavailable.";
+    }
+
     let humidityKey;
 
     if (humidityPercent < 30) {

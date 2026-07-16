@@ -5,6 +5,10 @@ export default function getFeelsLikeDescription(currentTemp, feelsLikeTemp) {
         same: "Similar to the actual temperature.",
     };
 
+    if (currentTemp == null || feelsLikeTemp == null) {
+        return "Temperature data unavailable.";
+    }
+
     let key;
 
     if(Math.abs(currentTemp - feelsLikeTemp) <= 1) {
